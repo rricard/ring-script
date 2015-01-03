@@ -3,7 +3,8 @@
   :url "http://example.com/FIXME"
 
   :dependencies [[org.clojure/clojure "1.6.0"]
-                 [org.clojure/clojurescript "0.0-2644"]]
+                 [org.clojure/clojurescript "0.0-2644"]
+                 [org.clojure/core.async "0.1.346.0-17112a-alpha"]]
 
   :plugins [[lein-cljsbuild "1.0.4"]]
 
@@ -15,14 +16,16 @@
     :builds [{:id "dev"
               :source-paths ["src"]
               :compiler {
+                :target :nodejs
                 :output-to "ring_node_adapter.js"
                 :output-dir "out"
                 :optimizations :none
-                :cache-analysis true                
+                :cache-analysis true
                 :source-map true}}
              {:id "release"
               :source-paths ["src"]
               :compiler {
+                :target :nodejs
                 :output-to "ring_node_adapter.min.js"
-                :pretty-print false              
+                :pretty-print false
                 :optimizations :advanced}}]})

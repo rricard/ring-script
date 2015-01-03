@@ -1,5 +1,61 @@
-(ns ring-node-adapter.core)
+(ns ring-node-adapter.core
+  (:require [clojure.core.async :refer [go <! >!! chan close!]]
+            [clojure.string :as str]))
 
-(enable-console-print!)
+(def http (js/require "http"))
+(def url (js/require "url"))
 
-(println "Hello world!")
+(defn node-req-to-ring
+  "Transform an incoming Node.js request to an async ring request"
+  [incoming]
+  (let [body-chan (chan)
+        socket (.-socket incoming)
+        parsed-url (.parse url (.-url incoming))
+        ring-req {:server-port (.-localPort socket)
+                  :server-name (.-localAddress socket)
+                  :remote-addr (.-remoteAddress socket)
+                  :uri (.-pathname parsed-url)
+                  :query-string (.-query parsed-url)
+                  :scheme :http ; todo: https features
+                  :request-method (keyword
+                                    (str/lower-case
+                                      (.-method incoming)))
+                  :ssl-cient-cert nil ; todo: https features
+                  :headers (js->clj (.-headers incoming))
+                  :body body-chan}]
+    (.on incoming "data" (partial >!! body-chan))
+    (.on incoming "end" (partial close! body-chan))
+    ring-req))
+
+(defn ring-res-to-node
+  "Transform an outgoing async ring response to a Node.js response
+  by taking an existing node res object"
+  [{:keys [status headers body]} node-res]
+  (.-statusCode node-res status)
+  (doseq (map #(.setHeader node-res % (get headers %))
+              (keys headers)))
+  (if (string? body)
+    (.end node-res body)
+    (go (loop []
+          (let [chnk (<! body)]
+            (if chnk
+              (do (.write node-res chnk) (recur))
+              (.end node-res))))))
+  nil)
+
+(defn build-node-handler
+  "Return Node.js-like HTTP Handler"
+  [ring-handler]
+  (fn [node-req node-res] false)
+    (ring-res-to-node
+      (ring-handler (node-req-to-ring node-req))
+      node-res))
+
+(defn run
+  "Run a Node.js HTTP Server supporting async ring handlers"
+  [handler {:keys [port]
+            :or {port 8000}}]
+  (.listen
+    (.createServer http
+                   (build-node-handler handler))
+    port))
