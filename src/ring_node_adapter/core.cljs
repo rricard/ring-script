@@ -1,5 +1,5 @@
 (ns ring-node-adapter.core
-  (:require [clojure.core.async :refer [go <! >!! chan close!]]
+  (:require [cljs.core.async :refer [chan put! take! close!]]
             [clojure.string :as str]))
 
 (def http (js/require "http"))
@@ -23,7 +23,7 @@
                   :ssl-cient-cert nil ; todo: https features
                   :headers (js->clj (.-headers incoming))
                   :body body-chan}]
-    (.on incoming "data" (partial >!! body-chan))
+    (.on incoming "data" (partial put! body-chan))
     (.on incoming "end" (partial close! body-chan))
     ring-req))
 
@@ -31,25 +31,23 @@
   "Transform an outgoing async ring response to a Node.js response
   by taking an existing node res object"
   [{:keys [status headers body]} node-res]
-  (.-statusCode node-res status)
-  (doseq (map #(.setHeader node-res % (get headers %))
+  (set! (.-statusCode node-res) status)
+  (dorun (map #(.setHeader node-res % (get headers %))
               (keys headers)))
   (if (string? body)
     (.end node-res body)
-    (go (loop []
-          (let [chnk (<! body)]
-            (if chnk
-              (do (.write node-res chnk) (recur))
-              (.end node-res))))))
+    (take! body #(if %
+                   (.write node-res %)
+                   (.end node-res))))
   nil)
 
 (defn build-node-handler
   "Return Node.js-like HTTP Handler"
   [ring-handler]
-  (fn [node-req node-res] false)
+  (fn [node-req node-res]
     (ring-res-to-node
       (ring-handler (node-req-to-ring node-req))
-      node-res))
+      node-res)))
 
 (defn run
   "Run a Node.js HTTP Server supporting async ring handlers"
