@@ -6,26 +6,14 @@
                  [org.clojure/clojurescript "0.0-2644"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]]
 
-  :plugins [[lein-cljsbuild "1.0.4"]]
-
-  :source-paths ["src" "target/classes"]
-
-  :clean-targets ["out/ring_node_adapter" "ring_node_adapter.js" "ring_node_adapter.min.js"]
+  :plugins [[lein-cljsbuild "1.0.4"]
+            [com.cemerick/clojurescript.test "0.3.3"]]
 
   :cljsbuild {
-    :builds [{:id "dev"
-              :source-paths ["src"]
+    :builds [{:source-paths ["src" "test"]
               :compiler {
-                :target :nodejs
-                :output-to "ring_node_adapter.js"
-                :output-dir "out"
-                :optimizations :none
-                :cache-analysis true
-                :source-map true}}
-             {:id "release"
-              :source-paths ["src"]
-              :compiler {
-                :target :nodejs
-                :output-to "ring_node_adapter.min.js"
-                :pretty-print false
-                :optimizations :advanced}}]})
+                :output-to "target/ring_node_adapter/testable.js"
+                :optimizations :simple
+                :pretty-print true}}]
+    :test-commands {"unit-tests" ["node" :node-runner
+                                  "target/ring_node_adapter/testable.js"]}})
