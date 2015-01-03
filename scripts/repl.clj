@@ -3,7 +3,7 @@
   '[cljs.repl.node :as node])
 
 (repl/repl* (node/repl-env)
-  {:output-dir "target"
+  {:output-dir "target/dev"
    :optimizations :none
    :cache-analysis true
    :source-map true})

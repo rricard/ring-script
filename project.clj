@@ -9,11 +9,27 @@
   :plugins [[lein-cljsbuild "1.0.4"]
             [com.cemerick/clojurescript.test "0.3.3"]]
 
+  :source-paths ["src" "example" "test"]
+
+  :clean-targets ["target"]
+
   :cljsbuild {
-    :builds [{:source-paths ["src" "test"]
+    :builds [{:id "test"
+              :target :nodejs
+              :source-paths ["src" "test"]
               :compiler {
-                :output-to "target/ring_node_adapter/testable.js"
+                :output-to "target/test.js"
+                :output-dir "target/test"
                 :optimizations :simple
+                :pretty-print true}}
+             {:id "dev"
+              :target :nodejs
+              :source-paths ["src" "example"]
+              :compiler {
+                :output-to "target/dev.js"
+                :output-dir "target/dev"
+                :optimizations :simple
+                :cache-analysis true
                 :pretty-print true}}]
     :test-commands {"unit-tests" ["node" :node-runner
-                                  "target/ring_node_adapter/testable.js"]}})
+                                  "target/test.js"]}})
