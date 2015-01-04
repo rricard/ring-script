@@ -3,7 +3,7 @@
   (:require [cljs.core.async :refer [<! chan >! close!]]
             [ring-node-adapter.core :refer [run]]))
 
-(defn handler [{:keys [body] :as req}]
+(defn echo-handler [{:keys [body] :as req}]
   (let [res-body (chan)]
     (go (loop [chnk (<! body)]
           (if chnk
@@ -13,4 +13,4 @@
      :headers {"content-type" "text/plain"}
      :body res-body}))
 
-(defn -main [] (run handler {:port 8000}))
+(defn -main [] (run echo-handler {:port 8000}))

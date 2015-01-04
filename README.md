@@ -1,26 +1,18 @@
-# ring-node-adapter
+# ring-script
 
-FIXME: Write a one-line description of your library/project.
+A ring-like API for ClojureScript, Node.js & core.async.
 
 ## Overview
 
-FIXME: Write a paragraph about the library/project and highlight its goals.
+ring-script works in a very similar way than Clojure's ring making it easier to port existing ring middleware and application.
+
+Usual ring libraries such as ring-core are likely to not work with ring-script as they often use Java interop. An ongoing effort is made in order to port tightly coupled JVM middlewares to Node.js. One other thing not supported by ring-script are InputStreams replaced by core.async channels.
+
+One particular goal of ring-script is to run compojure with minimal porting.
 
 ## Setup
 
-First-time Clojurescript developers, add the following to your bash .profile:
-
-    LEIN_FAST_TRAMPOLINE=y
-    export LEIN_FAST_TRAMPOLINE
-    alias cljsbuild="lein trampoline cljsbuild $@"
-
-To avoid compiling ClojureScript for each build, AOT Clojurescript locally in your project with the following:
-
-    ./scripts/compile_cljsc
-
-Subsequent dev builds can use:
-
-    lein cljsbuild auto dev
+    lein cljsbuild auto
 
 To start a Node REPL (requires rlwrap):
 
@@ -29,15 +21,13 @@ To start a Node REPL (requires rlwrap):
 Clean project specific out:
 
     lein clean
-     
-Optimized builds:
 
-    lein cljsbuild once release     
+Run:
 
-For more info on Cljs compilation, read [Waitin'](http://swannodette.github.io/2014/12/22/waitin/).
+    node run-dev.js
 
 ## License
 
-Copyright © 2014 FIXME
+Copyright © 2014 Robin Ricard
 
 Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.
