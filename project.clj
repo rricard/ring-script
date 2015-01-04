@@ -3,7 +3,7 @@
   :url "http://example.com/FIXME"
 
   :dependencies [[org.clojure/clojure "1.6.0"]
-                 [org.clojure/clojurescript "0.0-2644"]
+                 [org.clojure/clojurescript "0.0-2657"]
                  [org.clojure/core.async "0.1.346.0-17112a-alpha"]]
 
   :plugins [[lein-cljsbuild "1.0.4"]
@@ -15,21 +15,23 @@
 
   :cljsbuild {
     :builds [{:id "test"
-              :target :nodejs
               :source-paths ["src" "test"]
               :compiler {
+                :target :nodejs
                 :output-to "target/test.js"
                 :output-dir "target/test"
-                :optimizations :simple
+                :optimizations :none
                 :pretty-print true}}
              {:id "dev"
-              :target :nodejs
               :source-paths ["src" "example"]
               :compiler {
+                :target :nodejs
                 :output-to "target/dev.js"
                 :output-dir "target/dev"
-                :optimizations :simple
+                :optimizations :none
                 :cache-analysis true
-                :pretty-print true}}]
+                :pretty-print true
+                :source-map true}}]
     :test-commands {"unit-tests" ["node" :node-runner
+                                  "target/goog/bootstrap/nodejs"
                                   "target/test.js"]}})

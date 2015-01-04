@@ -1,4 +1,4 @@
-(ns example
+(ns ring-node-adapter.example
   (:require-macros [cljs.core.async.macros :refer [go]])
   (:require [cljs.core.async :refer [<! chan >!]]
             [ring-node-adapter.core :refer [run]]))
@@ -15,5 +15,3 @@
                    :body (str req)})))))))
 
 (defn -main [] (run handler {:port 8000}))
-
-(-main)
