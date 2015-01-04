@@ -1,5 +1,6 @@
 (ns ring-node-adapter.core
-  (:require [cljs.core.async :refer [chan put! take! close!]]
+  (:require-macros [cljs.core.async.macros :refer [go]])
+  (:require [cljs.core.async :refer [chan put! <! close!]]
             [clojure.string :as str]))
 
 (def http (js/require "http"))
@@ -36,9 +37,10 @@
               (keys headers)))
   (if (string? body)
     (.end node-res body)
-    (take! body #(if %
-                   (.write node-res %)
-                   (.end node-res))))
+    (go (loop [chnk (<! body)]
+          (if chnk
+            (do (.write node-res chnk) (recur (<! body)))
+            (.end node-res)))))
   nil)
 
 (defn build-node-handler
